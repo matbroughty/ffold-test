@@ -37,10 +37,10 @@ public class MainView extends VerticalLayout {
 		add(actions, grid, editor);
 
 		grid.setHeight("300px");
-		grid.setColumns("id", "firstName", "lastName");
+		grid.setColumns("id", "weekNumber");
 		grid.getColumnByKey("id").setWidth("50px").setFlexGrow(0);
 
-		filter.setPlaceholder("Filter by last name");
+		filter.setPlaceholder("Filter by week Number");
 
 		// Hook logic to components
 
@@ -54,7 +54,7 @@ public class MainView extends VerticalLayout {
 		});
 
 		// Instantiate and edit new Week the new button is clicked
-		addNewBtn.addClickListener(e -> editor.editCustomer(new Week("", "")));
+		addNewBtn.addClickListener(e -> editor.editCustomer(new Week(5)));
 
 		// Listen changes made by the editor, refresh data from backend
 		editor.setChangeHandler(() -> {
@@ -72,7 +72,7 @@ public class MainView extends VerticalLayout {
 			grid.setItems(repo.findAll());
 		}
 		else {
-			grid.setItems(repo.findByLastNameStartsWithIgnoreCase(filterText));
+			grid.setItems(repo.findAll());
 		}
 	}
 	// end::listCustomers[]

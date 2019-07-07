@@ -8,8 +8,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +36,9 @@ public class CustomerEditor extends VerticalLayout implements KeyNotifier {
 	private Week customer;
 
 	/* Fields to edit properties in Week entity */
-	TextField firstName = new TextField("First name");
-	TextField lastName = new TextField("Last name");
+	TextField weekNumber = new TextField("Week Number");
 
 	/* Action buttons */
-	// TODO why more code?
 	Button save = new Button("Save", VaadinIcon.CHECK.create());
 	Button cancel = new Button("Cancel");
 	Button delete = new Button("Delete", VaadinIcon.TRASH.create());
@@ -50,8 +50,10 @@ public class CustomerEditor extends VerticalLayout implements KeyNotifier {
 	@Autowired
 	public CustomerEditor(WeekRepository repository) {
 		this.repository = repository;
+		binder.forField(weekNumber).withConverter(new StringToIntegerConverter(""))
+				.bind(Week::getWeekNumber, Week::setWeekNumber);
 
-		add(firstName, lastName, actions);
+		add(weekNumber, actions);
 
 		// bind using naming convention
 		binder.bindInstanceFields(this);
@@ -108,7 +110,7 @@ public class CustomerEditor extends VerticalLayout implements KeyNotifier {
 		setVisible(true);
 
 		// Focus first name initially
-		firstName.focus();
+		weekNumber.focus();
 	}
 
 	public void setChangeHandler(ChangeHandler h) {

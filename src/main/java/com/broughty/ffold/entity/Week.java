@@ -3,9 +3,9 @@ package com.broughty.ffold.entity;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @Data
@@ -17,20 +17,43 @@ public class Week {
     @GeneratedValue
     private Long id;
 
-    @NonNull
-    private String firstName;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id")
+    private Season season;
+
+
+    @ToString.Exclude
+    @OneToMany(
+            mappedBy = "week",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<PlayerResult> playerResults = new ArrayList<>();
+
 
     @NonNull
-    private String lastName;
+    private Integer weekNumber;
 
-    public Week(String firstName, String lastName) {
-		this.firstName = firstName;
-		this.lastName = lastName;
+
+    public Week(Integer weekNumber) {
+        this.weekNumber = weekNumber;
     }
 
 
-    void doSomeStuff() {
-        log.debug("hello {} {}", getFirstName(), getId());
+
+    public void addPlayerResult(PlayerResult result) {
+        playerResults.add(result);
+        result.setWeek(this);
     }
+
+    public void removePlayerResult(PlayerResult result) {
+        playerResults.remove(result);
+        result.setWeek(null);
+    }
+
+
+
 
 }

@@ -1,6 +1,12 @@
 package com.broughty.ffold;
 
+import com.broughty.ffold.entity.Player;
+import com.broughty.ffold.entity.PlayerGroup;
+import com.broughty.ffold.entity.Season;
 import com.broughty.ffold.entity.Week;
+import com.broughty.ffold.repository.PlayerGroupRepository;
+import com.broughty.ffold.repository.PlayerRepository;
+import com.broughty.ffold.repository.SeasonRepository;
 import com.broughty.ffold.repository.WeekRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,37 +25,59 @@ public class FfoldApplication {
 	}
 
 	@Bean
-	public CommandLineRunner loadData(WeekRepository repository) {
+	public CommandLineRunner loadData(WeekRepository weekRepository, PlayerGroupRepository playerGroupRepository, PlayerRepository playerRepository, SeasonRepository seasonRepository) {
 		return (args) -> {
-			// save a couple of customers
-			repository.save(new Week("Jack", "Bauer"));
-			repository.save(new Week("Chloe", "O'Brian"));
-			repository.save(new Week("Kim", "Bauer"));
-			repository.save(new Week("David", "Palmer"));
-			repository.save(new Week("Michelle", "Dessler"));
 
-			// fetch all customers
-			log.info("Customers found with findAll():");
+			PlayerGroup playerGroup = playerGroupRepository.findDistinctByTitle("HPD");
+
+			if(playerGroup == null) {
+				playerGroup = new PlayerGroup();
+				playerGroup.setTitle("HPD");
+
+				Player player = playerRepository.findPlayerByName("Mat");
+				if(player == null){
+					playerGroup.addPlayer(new Player("Mat"));
+				}
+
+
+				playerGroupRepository.save(playerGroup);
+			}
+
+
+
+
+
+			Season season = new Season();
+			season.setPlayerGroup(playerGroup);
+			season.addWeek(new Week(1));
+			season.addWeek(new Week(2));
+			season.addWeek(new Week(3));
+			season.addWeek(new Week(4));
+
+			seasonRepository.save(season);
+
+
+
+
+			// fetch all weeks
+			log.info("weeks find all ():");
 			log.info("-------------------------------");
-			for (Week customer : repository.findAll()) {
-				log.info(customer.toString());
+			for (Week week : weekRepository.findAll()) {
+				log.info(week.toString());
 			}
 			log.info("");
 
-			// fetch an individual customer by ID
-			Week customer = repository.findById(1L).get();
-			log.info("Week found with findOne(1L):");
+			// fetch an individual week by number
+			Week week = weekRepository.findByWeekNumberAndSeasonId(1, season.getId());
+			log.info("Week found with with week number 1 and season id 1 ");
 			log.info("--------------------------------");
-			log.info(customer.toString());
+			log.info(week.toString());
 			log.info("");
 
 			// fetch customers by last name
-			log.info("Week found with findByLastNameStartsWithIgnoreCase('Bauer'):");
+			log.info("All Players in group:");
 			log.info("--------------------------------------------");
-			for (Week bauer : repository
-					.findByLastNameStartsWithIgnoreCase("Bauer")) {
-				log.info(bauer.toString());
-			}
+			playerGroupRepository.findAll().forEach(pg->log.info("Player Group = {}", pg));
 			log.info("");
 		};
 	}
