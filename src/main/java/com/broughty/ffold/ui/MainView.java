@@ -17,7 +17,7 @@ public class MainView extends VerticalLayout {
 
 	private final WeekRepository repo;
 
-	private final CustomerEditor editor;
+	private final WeekEditor editor;
 
 	final Grid<Week> grid;
 
@@ -25,7 +25,7 @@ public class MainView extends VerticalLayout {
 
 	private final Button addNewBtn;
 
-	public MainView(WeekRepository repo, CustomerEditor editor) {
+	public MainView(WeekRepository repo, WeekEditor editor) {
 		this.repo = repo;
 		this.editor = editor;
 		this.grid = new Grid<>(Week.class);
@@ -50,11 +50,11 @@ public class MainView extends VerticalLayout {
 
 		// Connect selected Week to editor or hide if none is selected
 		grid.asSingleSelect().addValueChangeListener(e -> {
-			editor.editCustomer(e.getValue());
+			editor.editWeek(e.getValue());
 		});
 
 		// Instantiate and edit new Week the new button is clicked
-		addNewBtn.addClickListener(e -> editor.editCustomer(new Week(5)));
+		addNewBtn.addClickListener(e -> editor.editWeek(new Week(5)));
 
 		// Listen changes made by the editor, refresh data from backend
 		editor.setChangeHandler(() -> {
