@@ -19,6 +19,16 @@ public class Season {
     @GeneratedValue
     private Long id;
 
+    /**
+     * This will be in the form 2019-20 or 2018-19 etc
+     */
+    private String year;
+
+    /**
+     * True if current season
+     */
+    private Boolean isCurrent = Boolean.FALSE;
+
     @OneToMany(
             mappedBy = "season",
             cascade = CascadeType.ALL,
