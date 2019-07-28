@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 
-public interface WeekRepository extends JpaRepository<Week, Long> {
+public interface WeekRepository extends JpaRepository<Week, Long>, CustomWeekRepository {
 
 	Week findByWeekNumberAndSeasonId(Integer weekNumber, Long seasonId);
 

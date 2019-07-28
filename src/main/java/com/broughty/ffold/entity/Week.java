@@ -37,6 +37,9 @@ public class Week {
     private Integer weekNumber;
 
 
+    private String notes;
+
+
     public Week(Integer weekNumber) {
         this.weekNumber = weekNumber;
     }
