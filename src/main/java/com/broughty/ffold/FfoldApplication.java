@@ -21,38 +21,46 @@ public class FfoldApplication {
         SpringApplication.run(FfoldApplication.class);
     }
 
+    PlayerGroupRepository playerGroupRepository;
+
+    PlayerRepository playerRepository;
+
     @Bean
     public CommandLineRunner loadData(WeekRepository weekRepository, PlayerGroupRepository playerGroupRepository,
                                       PlayerRepository playerRepository, SeasonRepository seasonRepository,
                                       PlayerResultRepository playerResultRepository) {
+        this.playerGroupRepository = playerGroupRepository;
+        this.playerRepository = playerRepository;
         return (args) -> {
-            Player player = null;
             PlayerGroup playerGroup = playerGroupRepository.findDistinctByTitle("HPD");
-
             if (playerGroup == null) {
                 playerGroup = new PlayerGroup();
                 playerGroup.setTitle("HPD");
-
-                player = playerRepository.findPlayerByName("Mat");
-                if (player == null) {
-                    playerGroup.addPlayer(new Player("Mat"));
-                }
+                addPlayersToGroup(playerGroup, "Mat", "Jase", "Gez", "Frank");
 
 
-                playerGroupRepository.save(playerGroup);
+                Season season = new Season();
+                season.setYear("2019-20");
+                season.setIsCurrent(true);
+                season.setPlayerGroup(playerGroup);
+                season.addWeek(new Week(1));
+                seasonRepository.save(season);
+
             }
 
+            playerGroup = playerGroupRepository.findDistinctByTitle("Kent");
+            if (playerGroup == null) {
+                playerGroup = new PlayerGroup();
+                playerGroup.setTitle("Kent");
+                addPlayersToGroup(playerGroup, "Mat", "Dan", "Ian", "PaulS", "PaulV");
+                Season season = new Season();
+                season.setYear("2019-20");
+                season.setIsCurrent(true);
+                season.setPlayerGroup(playerGroup);
+                season.addWeek(new Week(1));
+                seasonRepository.save(season);
 
-            Season season = new Season();
-            season.setYear("2019-20");
-            season.setIsCurrent(true);
-            season.setPlayerGroup(playerGroup);
-            season.addWeek(new Week(1));
-            season.addWeek(new Week(2));
-            season.addWeek(new Week(3));
-            season.addWeek(new Week(4));
-
-            seasonRepository.save(season);
+            }
 
 
             // fetch all weeks
@@ -63,22 +71,7 @@ public class FfoldApplication {
             }
             log.info("");
 
-            // fetch an individual week by number
-            Week week = weekRepository.findByWeekNumberAndSeasonId(1, season.getId());
 
-            PlayerResult playerResult = new PlayerResult();
-            playerResult.setWeek(week);
-            playerResult.setPlayer(playerRepository.findPlayerByName("Mat"));
-            playerResult.setMatches(5);
-            playerResult.setWinnings(new BigDecimal("123.44"));
-            playerResult.setNotes("TOT,MCY,LIV,MUN,ARS");
-            playerResultRepository.save(playerResult);
-
-
-            log.info("Week found with with week number 1 and season id 1 ");
-            log.info("--------------------------------");
-            log.info(week.toString());
-            log.info("");
 
             // fetch customers by last name
             log.info("All Players in group:");
@@ -96,5 +89,17 @@ public class FfoldApplication {
 
 
         };
+    }
+
+    private void addPlayersToGroup(PlayerGroup playerGroup, String...names) {
+        for (String name : names) {
+            Player player = playerRepository.findPlayerByName(name);
+            if (player == null) {
+                playerGroup.addPlayer(new Player(name));
+            }
+        }
+
+        playerGroupRepository.save(playerGroup);
+
     }
 }
