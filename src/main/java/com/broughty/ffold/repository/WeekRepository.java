@@ -1,6 +1,7 @@
 package com.broughty.ffold.repository;
 
 import com.broughty.ffold.entity.Week;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,7 +19,8 @@ public interface WeekRepository extends JpaRepository<Week, Long>, CustomWeekRep
 	@Query("SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1")
 	List<Week> findCurrentWeeksForPlayerGroup(String playerGroup);
 
-
+	@Query("SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1 order by w.weekNumber desc ")
+	List<Week> findLatestWeekForPlayerGroup(String playerGroup, Pageable limit);
 
 
 

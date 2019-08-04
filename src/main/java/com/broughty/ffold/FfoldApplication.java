@@ -1,9 +1,6 @@
 package com.broughty.ffold;
 
-import com.broughty.ffold.entity.Player;
-import com.broughty.ffold.entity.PlayerGroup;
-import com.broughty.ffold.entity.Season;
-import com.broughty.ffold.entity.Week;
+import com.broughty.ffold.entity.*;
 import com.broughty.ffold.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +8,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 
 @SpringBootApplication
@@ -25,6 +25,7 @@ public class FfoldApplication {
     }
 
     @Bean
+    @Transactional
     public CommandLineRunner loadData(WeekRepository weekRepository, PlayerGroupRepository playerGroupRepository,
                                       PlayerRepository playerRepository, SeasonRepository seasonRepository,
                                       PlayerResultRepository playerResultRepository) {
@@ -42,8 +43,35 @@ public class FfoldApplication {
                 season.setYear("2019-20");
                 season.setIsCurrent(true);
                 season.setPlayerGroup(playerGroup);
-                season.addWeek(new Week(1));
+                Week week = new Week(1);
+                season.addWeek(week);
                 seasonRepository.save(season);
+
+                week.setNotes("Week 1 - generated.  Championship games");
+
+                playerGroup.getPlayers().forEach(player -> {
+                    PlayerResult playerResult = new PlayerResult();
+                    playerResult.setPlayer(player);
+                    playerResult.setWeek(week);
+                    playerResult.setWinnings(player.getName().equalsIgnoreCase("Jase") ? new BigDecimal(12.81) : new BigDecimal(120.90));
+                    playerResult.setMatches(0);
+                    playerResultRepository.save(playerResult);
+                });
+
+                Week week2 = new Week(2);
+                season.addWeek(week2);
+                weekRepository.save(week2);
+                seasonRepository.save(season);
+
+                playerGroup.getPlayers().forEach(player -> {
+                    PlayerResult playerResult = new PlayerResult();
+                    playerResult.setPlayer(player);
+                    playerResult.setWeek(week2);
+                    playerResult.setWinnings(player.getName().equalsIgnoreCase("Jase") ? new BigDecimal(33.99) : new BigDecimal(901.76));
+                    playerResult.setMatches(0);
+                    playerResultRepository.save(playerResult);
+                });
+
 
             }
 
@@ -51,13 +79,26 @@ public class FfoldApplication {
             if (playerGroup == null) {
                 playerGroup = new PlayerGroup();
                 playerGroup.setTitle("Kent");
-                addPlayersToGroup(playerGroup, "Mat", "Dan", "Ian", "PaulS", "PaulV");
+                addPlayersToGroup(playerGroup, "Matty", "Dan", "Ian", "PaulS", "PaulV");
                 Season season = new Season();
                 season.setYear("2019-20");
                 season.setIsCurrent(true);
                 season.setPlayerGroup(playerGroup);
-                season.addWeek(new Week(1));
+                Week week = new Week(1);
+                week.setNotes("Week 1 - generated.  Championship games");
+                season.addWeek(week);
                 seasonRepository.save(season);
+
+
+                playerGroup.getPlayers().forEach(player -> {
+                    PlayerResult playerResult = new PlayerResult();
+                    playerResult.setPlayer(player);
+                    playerResult.setWeek(week);
+                    playerResult.setWinnings(BigDecimal.ZERO);
+                    playerResult.setMatches(0);
+                    playerResultRepository.save(playerResult);
+                });
+
 
             }
 
@@ -92,9 +133,11 @@ public class FfoldApplication {
     private void addPlayersToGroup(PlayerGroup playerGroup, String... names) {
         for (String name : names) {
             Player player = playerRepository.findPlayerByName(name);
-            if (player == null) {
+            //if (player == null) {
                 playerGroup.addPlayer(new Player(name));
-            }
+//            }else{
+//                playerGroup.addPlayer(playerRepository.);
+//            }
         }
 
         playerGroupRepository.save(playerGroup);

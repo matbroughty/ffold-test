@@ -10,10 +10,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -35,29 +33,27 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
         log.info("findCurrentSeasonsWeeksForPlayerGroupMap with player group {} and week {}", playerGroup, weekNumber);
         List<Map<String, Object>> weeksListMap = new ArrayList<>();
         List<Week> weeks;
-        if(StringUtils.isNumeric(weekNumber)){
-            weeks  = entityManager.createQuery(CURRENT_SEASON_SPECIFIC_WEEK)
+        if (StringUtils.isNumeric(weekNumber)) {
+            weeks = entityManager.createQuery(CURRENT_SEASON_SPECIFIC_WEEK)
                     .setParameter(1, playerGroup).setParameter(2, Integer.valueOf(weekNumber)).getResultList();
-        }else{
-            weeks  = entityManager.createQuery(CURRENT_SEASON_ALL_WEEKS)
+        } else {
+            weeks = entityManager.createQuery(CURRENT_SEASON_ALL_WEEKS)
                     .setParameter(1, playerGroup).getResultList();
         }
 
-
-
         log.info("Weeks size = {}", weeks.size());
         weeks.forEach(week -> {
-            Map<String, Object> weekMap = new HashMap<>();
+            Map<String, Object> weekMap = new LinkedHashMap<>();
             log.info("Processing week {}", week);
-            weekMap.put("Week Id", week.getId().toString());
             weekMap.put("Week Number", week.getWeekNumber());
-            weekMap.put("Week Notes", week.getNotes());
-            weekMap.put("Season", week.getSeason().getYear());
-            weekMap.put("Season Id", week.getSeason().getId());
             weekMap.putAll(week.getPlayerResults()
                     .stream()
                     .filter(pr -> pr.getPlayer() != null)
                     .collect(Collectors.toMap(pr -> pr.getPlayer().getName(), PlayerResult::getWinnings)));
+            weekMap.put("Season", week.getSeason().getYear());
+            weekMap.put("Week Notes", week.getNotes());
+            //weekMap.put("Season Id", week.getSeason().getId());
+            //weekMap.put("Week Id", week.getId().toString());
             weeksListMap.add(weekMap);
         });
 
@@ -67,5 +63,30 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
     @Override
     public Map<String, Object> findWeeksForPlayerGroupAndSeasonYearMap(String playerGroup, String year) {
         return null;
+    }
+
+    @Override
+    public Map<String, PlayerTotals> buildPlayerTotalMap(String playerGroup) {
+        List<Week> weeks = entityManager.createQuery(CURRENT_SEASON_ALL_WEEKS)
+                .setParameter(1, playerGroup).getResultList();
+
+        Map<String, PlayerTotals> playerTotalsMap = new HashMap<>();
+        weeks.stream().forEach(week -> {
+            week.getPlayerResults()
+                    .stream()
+                    .filter(pr -> pr.getWinnings().compareTo(BigDecimal.ZERO) > 0)
+                    .forEach(playerResult -> {
+                        PlayerTotals playerTotals = playerTotalsMap.get(playerResult.getPlayer().getName());
+                        if (playerTotals == null) {
+                            playerTotals = new PlayerTotals(playerResult.getPlayer().getName());
+                            playerTotalsMap.put(playerResult.getPlayer().getName(), playerTotals);
+                        }
+                        playerTotals.setTotalWon(playerTotals.getTotalWon().add(playerResult.getWinnings()));
+                        playerTotals.getWinningWeeks().add(playerResult.getWeek());
+                    });
+
+        });
+        playerTotalsMap.forEach((k,v) -> log.info("buildPlayerTotalMap with player name {} and value {}", k, v));
+        return playerTotalsMap;
     }
 }
