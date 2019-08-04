@@ -1,6 +1,9 @@
 package com.broughty.ffold;
 
-import com.broughty.ffold.entity.*;
+import com.broughty.ffold.entity.Player;
+import com.broughty.ffold.entity.PlayerGroup;
+import com.broughty.ffold.entity.Season;
+import com.broughty.ffold.entity.Week;
 import com.broughty.ffold.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,21 +12,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.math.BigDecimal;
-
 
 @SpringBootApplication
 public class FfoldApplication {
 
     private static final Logger log = LoggerFactory.getLogger(FfoldApplication.class);
+    PlayerGroupRepository playerGroupRepository;
+    PlayerRepository playerRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(FfoldApplication.class);
     }
-
-    PlayerGroupRepository playerGroupRepository;
-
-    PlayerRepository playerRepository;
 
     @Bean
     public CommandLineRunner loadData(WeekRepository weekRepository, PlayerGroupRepository playerGroupRepository,
@@ -72,7 +71,6 @@ public class FfoldApplication {
             log.info("");
 
 
-
             // fetch customers by last name
             log.info("All Players in group:");
             log.info("--------------------------------------------");
@@ -80,9 +78,9 @@ public class FfoldApplication {
             log.info("");
 
 
-            weekRepository.findCurrentSeasonsWeeksForPlayerGroupMap("HPD").forEach(map -> {
+            weekRepository.findCurrentSeasonsWeeksForPlayerGroupMap("HPD", null).forEach(map -> {
                         log.info("On another week");
-                        map.forEach((k,v) -> log.info("Key = {} and value = {}", k, v));
+                        map.forEach((k, v) -> log.info("Key = {} and value = {}", k, v));
                     }
 
             );
@@ -91,7 +89,7 @@ public class FfoldApplication {
         };
     }
 
-    private void addPlayersToGroup(PlayerGroup playerGroup, String...names) {
+    private void addPlayersToGroup(PlayerGroup playerGroup, String... names) {
         for (String name : names) {
             Player player = playerRepository.findPlayerByName(name);
             if (player == null) {

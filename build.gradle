@@ -40,7 +40,10 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '7.2.2.jre8'
 	compile group: 'com.vaadin', name: 'vaadin-confirm-dialog-flow', version: '1.2.1'
-	compile group: 'com.vaadin', name: 'vaadin-charts-flow', version: '6.0.0'
+	//compile group: 'com.vaadin', name: 'vaadin-charts-flow', version: '6.0.0'
+	// https://mvnrepository.com/artifact/com.vaadin/vaadin-charts-flow
+	compile group: 'com.vaadin', name: 'vaadin-charts-flow', version: '7.0.1'
+
 	//compile("com.h2database:h2")
 	testCompile("junit:junit")
 }
