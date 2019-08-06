@@ -53,7 +53,7 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
             weekMap.put("Season", week.getSeason().getYear());
             weekMap.put("Week Notes", week.getNotes());
             //weekMap.put("Season Id", week.getSeason().getId());
-            //weekMap.put("Week Id", week.getId().toString());
+            weekMap.put("week_id", week.getId().toString());
             weeksListMap.add(weekMap);
         });
 
@@ -86,7 +86,7 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
                     });
 
         });
-        playerTotalsMap.forEach((k,v) -> log.info("buildPlayerTotalMap with player name {} and value {}", k, v));
+        playerTotalsMap.forEach((k, v) -> log.info("buildPlayerTotalMap with player name {} and value {}", k, v));
         return playerTotalsMap;
     }
 }

@@ -134,7 +134,7 @@ public class FfoldApplication {
         for (String name : names) {
             Player player = playerRepository.findPlayerByName(name);
             //if (player == null) {
-                playerGroup.addPlayer(new Player(name));
+            playerGroup.addPlayer(new Player(name));
 //            }else{
 //                playerGroup.addPlayer(playerRepository.);
 //            }

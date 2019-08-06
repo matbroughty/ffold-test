@@ -2,6 +2,7 @@ package com.broughty.ffold.ui;
 
 import com.broughty.ffold.entity.Week;
 import com.broughty.ffold.repository.WeekRepository;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
@@ -11,57 +12,39 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 @SpringComponent
 @UIScope
 public class WeekEditor extends VerticalLayout implements KeyNotifier {
-
+    private static final Logger log = LoggerFactory.getLogger(WeekEditor.class);
+    @Autowired
     private final WeekRepository repository;
-
-    /**
-     * The currently edited week
-     */
-    private Week week;
-
-    /* Fields to edit properties in Week entity */
-    TextField weekNumber = new TextField("Week Number");
-
-
     /* Action buttons */
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
     Button delete = new Button("Delete", VaadinIcon.TRASH.create());
     HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
-
-    Binder<Week> binder = new Binder<>(Week.class);
+    Binder<Map<String, Object>> binder = new Binder<>();
+    /**
+     * The currently edited week
+     */
+    private Week week;
     private ChangeHandler changeHandler;
+
 
     @Autowired
     public WeekEditor(WeekRepository repository) {
         this.repository = repository;
-        binder.forField(weekNumber).withConverter(new StringToIntegerConverter(""))
-                .bind(Week::getWeekNumber, Week::setWeekNumber);
-
-
-        //binder.forField()
-
-        add(weekNumber, actions);
-
-        // bind using naming convention
-        binder.bindInstanceFields(this);
-
-        // Configure and style components
-        setSpacing(true);
-
-        save.getElement().getThemeList().add("primary");
-        delete.getElement().getThemeList().add("error");
-
-        addKeyPressListener(Key.ENTER, e -> save());
 
         // wire action buttons to save, delete and reset
         save.addClickListener(e -> save());
@@ -70,6 +53,31 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
         delete.addClickListener(e -> dialog.open());
         cancel.addClickListener(e -> cancel());
         setVisible(false);
+    }
+
+    /**
+     * Create a textfield
+     * - add it to the layout
+     * - bind the Map value to the textfield
+     *
+     * @param code
+     */
+    private TextField createTextField(Map<String, Object> week, String key) {
+        TextField tf = new TextField();
+        tf.setWidth("250px");
+        tf.setTitle(key);
+        tf.setLabel(key);
+
+        //bind element
+        binder.forField(tf).bind(// getter
+                list -> {
+                    return week.get(key) != null ? week.get(key).toString() : null;
+                },
+                //setter
+                (list, fieldValue) -> {
+                    list.put(key, fieldValue);
+                });
+        return tf;
     }
 
 
@@ -82,26 +90,53 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
         repository.save(week);
         changeHandler.onChange();
     }
+
     void cancel() {
         changeHandler.onChange();
     }
 
+    // TODO - take map and create week to persist
+    public final void editWeek(Map<String, Object> week) {
+        binder.setBean(null);
+        removeAll();
 
-    public interface ChangeHandler {
-        void onChange();
-    }
+        HorizontalLayout form = new HorizontalLayout();
 
-    public final void editWeek(Week c) {
-        if (c == null) {
+        List<Component> components = new ArrayList<>();
+        if(week != null){
+            week.forEach((k, v) -> {
+                log.info("adding component for key {} and value {}", k, v);
+                components.add(createTextField(week, k));
+            });
+        }
+
+        form.add(components.toArray(new Component[components.size()]));
+        add(form, actions);
+
+        // bind using naming convention
+        binder.bindInstanceFields(this);
+
+        // Configure and style components
+        setSpacing(true);
+
+        save.getElement().getThemeList().add("primary");
+        delete.getElement().getThemeList().add("error");
+
+        addKeyPressListener(Key.ENTER, e -> save());
+
+
+        if (week == null) {
             setVisible(false);
             return;
         }
-        final boolean persisted = c.getId() != null;
+        final boolean persisted = week.get("week_id") != null;
+        Week weekDomain;
         if (persisted) {
             // Find fresh entity for editing
-            week = repository.findById(c.getId()).get();
-        } else {
-            week = c;
+            // todo
+            log.info("week id = {}", week.get("week_id"));
+            weekDomain = repository.findById(new Long(week.get("week_id").toString())).get();
+            log.info("week domain = {}", weekDomain);
         }
         cancel.setVisible(persisted);
 
@@ -112,14 +147,16 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
 
         setVisible(true);
 
-        // Focus first name initially
-        weekNumber.focus();
     }
 
     public void setChangeHandler(ChangeHandler h) {
         // ChangeHandler is notified when either save or delete
         // is clicked
         changeHandler = h;
+    }
+
+    public interface ChangeHandler {
+        void onChange();
     }
 
 }

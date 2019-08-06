@@ -10,19 +10,17 @@ import java.util.List;
 
 public interface WeekRepository extends JpaRepository<Week, Long>, CustomWeekRepository {
 
-	Week findByWeekNumberAndSeasonId(Integer weekNumber, Long seasonId);
+    Week findByWeekNumberAndSeasonId(Integer weekNumber, Long seasonId);
 
 
-	@Query("SELECT w FROM Week w JOIN w.season s WHERE s.isCurrent = true")
-	List<Week> findCurrentWeeks();
+    @Query("SELECT w FROM Week w JOIN w.season s WHERE s.isCurrent = true")
+    List<Week> findCurrentWeeks();
 
-	@Query("SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1")
-	List<Week> findCurrentWeeksForPlayerGroup(String playerGroup);
+    @Query("SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1")
+    List<Week> findCurrentWeeksForPlayerGroup(String playerGroup);
 
-	@Query("SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1 order by w.weekNumber desc ")
-	List<Week> findLatestWeekForPlayerGroup(String playerGroup, Pageable limit);
-
-
+    @Query("SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1 order by w.weekNumber desc ")
+    List<Week> findLatestWeekForPlayerGroup(String playerGroup, Pageable limit);
 
 
 }

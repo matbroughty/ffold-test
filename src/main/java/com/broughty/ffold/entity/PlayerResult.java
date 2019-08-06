@@ -36,5 +36,4 @@ public class PlayerResult {
     private String notes;
 
 
-
 }

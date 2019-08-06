@@ -45,7 +45,6 @@ public class Week {
     }
 
 
-
     public void addPlayerResult(PlayerResult result) {
         playerResults.add(result);
         result.setWeek(this);
@@ -55,8 +54,6 @@ public class Week {
         playerResults.remove(result);
         result.setWeek(null);
     }
-
-
 
 
 }
