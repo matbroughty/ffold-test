@@ -17,6 +17,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
     HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
     Binder<Map<String, Object>> binder = new Binder<>();
     /**
+     * TODO - need to set this from map
      * The currently edited week
      */
     private Week week;
@@ -132,6 +134,7 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
         final boolean persisted = week.get("week_id") != null;
         Week weekDomain;
         if (persisted) {
+            //TODO create domain
             // Find fresh entity for editing
             // todo
             log.info("week id = {}", week.get("week_id"));

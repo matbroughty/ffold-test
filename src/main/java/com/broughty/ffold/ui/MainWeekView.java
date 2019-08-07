@@ -1,9 +1,6 @@
 package com.broughty.ffold.ui;
 
-import com.broughty.ffold.entity.Week;
-import com.broughty.ffold.repository.PlayerGroupRepository;
-import com.broughty.ffold.repository.SeasonRepository;
-import com.broughty.ffold.repository.WeekRepository;
+import com.broughty.ffold.repository.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
@@ -22,17 +19,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
+import static com.broughty.ffold.repository.CustomWeekRepositoryImpl.WEEK_NOTES;
+import static com.broughty.ffold.repository.CustomWeekRepositoryImpl.WEEK_NUMBER;
 
 
 @Route(value = "")
-@Transactional
 public class MainWeekView extends VerticalLayout implements HasUrlParameter<String> {
     private static final Logger log = LoggerFactory.getLogger(MainWeekView.class);
     final Grid<Map<String, Object>> grid;
@@ -46,9 +43,11 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
     private boolean isAdmin = false;
     private String playerGroupStr = null;
     private PlayerGroupRepository playerGroupRepository;
+    private WeekRepository customWeekRepository;
 
-    public MainWeekView(WeekRepository weekRepository, SeasonRepository seasonRepository, WeekEditor editor, PlayerGroupRepository playerGroupRepository) {
+    public MainWeekView(WeekRepository weekRepository, SeasonRepository seasonRepository, WeekEditor editor, PlayerGroupRepository playerGroupRepository, WeekRepository customWeekRepository) {
         this.playerGroupRepository = playerGroupRepository;
+        this.customWeekRepository = customWeekRepository;
         log.info("In MainWeekView with isAdmin = {} and player group {}", isAdmin, playerGroupStr);
         this.weekRepository = weekRepository;
         this.seasonRepository = seasonRepository;
@@ -57,18 +56,14 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         this.filter = new TextField();
         this.addNewBtn = new Button("New Week ", VaadinIcon.PLUS.create());
 
-
         // build layout
         HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
-
 
         //chart = getChart();
         chart = getMultiChart();
         add(chart, label, actions, grid, editor);
 
         grid.setHeight("300px");
-
-
         filter.setPlaceholder("Filter by week Number");
 
         // Hook logic to components
@@ -81,8 +76,9 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         grid.asSingleSelect().addValueChangeListener(e -> editor.editWeek(e.getValue()));
 
         // Instantiate and edit new Week the new button is clicked
-        // todo create map for current week
-        addNewBtn.addClickListener(e -> editor.editWeek(Collections.emptyMap()));
+        addNewBtn.addClickListener(e -> {
+            editor.editWeek(customWeekRepository.createNextWeekForPlayerGroupMap(playerGroupStr));
+        });
 
         // Listen changes made by the editor, refresh data from backend
         editor.setChangeHandler(() -> {
@@ -159,7 +155,7 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
 
     }
 
-
+    //todo use grdi data to produce charts
     protected Chart getMultiChart() {
         final Chart chart = new Chart(ChartType.COLUMN);
         chart.setId("chart");

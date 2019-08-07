@@ -34,7 +34,7 @@ public class Week {
 
 
     @NonNull
-    private Integer weekNumber;
+    private Integer weekNumber = 0;
 
 
     private String notes;

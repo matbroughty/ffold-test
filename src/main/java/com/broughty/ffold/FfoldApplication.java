@@ -32,7 +32,7 @@ public class FfoldApplication {
         this.playerGroupRepository = playerGroupRepository;
         this.playerRepository = playerRepository;
         return (args) -> {
-            PlayerGroup playerGroup = playerGroupRepository.findDistinctByTitle("HPD");
+            PlayerGroup playerGroup = playerGroupRepository.findDistinctByTitle("HPD").orElse(null);
             if (playerGroup == null) {
                 playerGroup = new PlayerGroup();
                 playerGroup.setTitle("HPD");
@@ -75,7 +75,7 @@ public class FfoldApplication {
 
             }
 
-            playerGroup = playerGroupRepository.findDistinctByTitle("Kent");
+            playerGroup = playerGroupRepository.findDistinctByTitle("Kent").orElse(null);
             if (playerGroup == null) {
                 playerGroup = new PlayerGroup();
                 playerGroup.setTitle("Kent");

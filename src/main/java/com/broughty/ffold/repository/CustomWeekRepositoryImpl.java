@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,16 @@ import java.util.stream.Collectors;
 
 @Repository
 public class CustomWeekRepositoryImpl implements CustomWeekRepository {
+
+    public static final String WEEK_NUMBER = "Week Number";
+
+    public static final String SEASON = "Season";
+
+    public static final String SEASON_ID = "season_id";
+
+    public static final String WEEK_NOTES = "Week Notes";
+
+    public static final String WEEK_ID = "week_id";
 
     private static final Logger log = LoggerFactory.getLogger(CustomWeekRepositoryImpl.class);
 
@@ -45,15 +56,15 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
         weeks.forEach(week -> {
             Map<String, Object> weekMap = new LinkedHashMap<>();
             log.info("Processing week {}", week);
-            weekMap.put("Week Number", week.getWeekNumber());
+            weekMap.put(WEEK_NUMBER, week.getWeekNumber());
             weekMap.putAll(week.getPlayerResults()
                     .stream()
                     .filter(pr -> pr.getPlayer() != null)
                     .collect(Collectors.toMap(pr -> pr.getPlayer().getName(), PlayerResult::getWinnings)));
-            weekMap.put("Season", week.getSeason().getYear());
-            weekMap.put("Week Notes", week.getNotes());
-            //weekMap.put("Season Id", week.getSeason().getId());
-            weekMap.put("week_id", week.getId().toString());
+           // weekMap.put(SEASON, week.getSeason().getYear());
+            weekMap.put(WEEK_NOTES, week.getNotes());
+           // weekMap.put(SEASON_ID, week.getSeason().getId());
+            weekMap.put(WEEK_ID, week.getId().toString());
             weeksListMap.add(weekMap);
         });
 
@@ -88,5 +99,18 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
         });
         playerTotalsMap.forEach((k, v) -> log.info("buildPlayerTotalMap with player name {} and value {}", k, v));
         return playerTotalsMap;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> createNextWeekForPlayerGroupMap(String playerGroup) {
+        List<Week> weeks = entityManager.createQuery(CURRENT_SEASON_ALL_WEEKS)
+                .setParameter(1, playerGroup).getResultList();
+        Week week = weeks.stream().min(Comparator.comparing(Week::getWeekNumber)).orElse(new Week());
+        Map<String, Object> weekMap = new LinkedHashMap<>();
+        week.getSeason().getPlayerGroup().getPlayers().forEach(p-> weekMap.put(p.getName(), BigDecimal.ZERO));
+        weekMap.put(WEEK_NUMBER, week.getWeekNumber() + 1);
+        weekMap.put(WEEK_NOTES, "");
+        return weekMap;
     }
 }
