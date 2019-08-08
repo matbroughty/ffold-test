@@ -1,7 +1,5 @@
 package com.broughty.ffold.repository;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Map;
 
@@ -13,4 +11,8 @@ public interface CustomWeekRepository {
     Map<String, PlayerTotals> buildPlayerTotalMap(String playerGroup);
 
     Map<String, Object> createNextWeekForPlayerGroupMap(String playerGroup);
+
+    void delete(Map<String, Object> weekDetails);
+
+    void save(Map<String, Object> weekDetails);
 }

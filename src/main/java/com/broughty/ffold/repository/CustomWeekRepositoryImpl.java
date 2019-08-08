@@ -1,12 +1,13 @@
 package com.broughty.ffold.repository;
 
 import com.broughty.ffold.entity.PlayerResult;
+import com.broughty.ffold.entity.Season;
 import com.broughty.ffold.entity.Week;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,9 +62,9 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
                     .stream()
                     .filter(pr -> pr.getPlayer() != null)
                     .collect(Collectors.toMap(pr -> pr.getPlayer().getName(), PlayerResult::getWinnings)));
-           // weekMap.put(SEASON, week.getSeason().getYear());
+            //weekMap.put(SEASON, week.getSeason().getYear());
             weekMap.put(WEEK_NOTES, week.getNotes());
-           // weekMap.put(SEASON_ID, week.getSeason().getId());
+            weekMap.put(SEASON_ID, week.getSeason().getId());
             weekMap.put(WEEK_ID, week.getId().toString());
             weeksListMap.add(weekMap);
         });
@@ -106,11 +107,58 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
     public Map<String, Object> createNextWeekForPlayerGroupMap(String playerGroup) {
         List<Week> weeks = entityManager.createQuery(CURRENT_SEASON_ALL_WEEKS)
                 .setParameter(1, playerGroup).getResultList();
-        Week week = weeks.stream().min(Comparator.comparing(Week::getWeekNumber)).orElse(new Week());
+        Week week = weeks.stream().max(Comparator.comparing(Week::getWeekNumber)).orElse(new Week());
         Map<String, Object> weekMap = new LinkedHashMap<>();
         week.getSeason().getPlayerGroup().getPlayers().forEach(p-> weekMap.put(p.getName(), BigDecimal.ZERO));
         weekMap.put(WEEK_NUMBER, week.getWeekNumber() + 1);
+        weekMap.put(SEASON_ID, week.getSeason().getId());
         weekMap.put(WEEK_NOTES, "");
         return weekMap;
+    }
+
+
+    @Transactional
+    @Override
+    public void delete(@NonNull Map<String, Object> weekDetails) {
+        log.info("in delete with {} ", weekDetails.keySet().stream().map(k-> "key = " + k + " value = " + weekDetails.get(k)).collect(Collectors.toList()));
+        String weekId = weekDetails.get(WEEK_ID) != null ? weekDetails.get(WEEK_ID).toString() : null;
+        if(StringUtils.isNotBlank(weekId)){
+            Week week = entityManager.find(Week.class, Long.valueOf(weekId));
+            log.warn("deleting week with id {} - week {}", weekId, week);
+            entityManager.remove(week);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void save(Map<String, Object> weekDetails) {
+        log.info("in save with {} ", weekDetails.keySet().stream().map(k-> "key = " + k + " value = " + weekDetails.get(k)).collect(Collectors.toList()));
+        String weekId = weekDetails.get(WEEK_ID) != null ? weekDetails.get(WEEK_ID).toString() : null;
+        Week week;
+        if(StringUtils.isNotBlank(weekId)){
+            week = entityManager.find(Week.class, Long.valueOf(weekId));
+            log.info("Updating week {}", week);
+            week.getPlayerResults().stream().forEach(pr-> {
+                log.info("Updating player result for {} from {} to {} ", pr.getPlayer(), pr.getWinnings(), weekDetails.get(pr.getPlayer().getName()));
+                pr.setWinnings(new BigDecimal(weekDetails.get(pr.getPlayer().getName()).toString()));
+            });
+        }else{
+            week = new Week();
+            Season season = entityManager.find(Season.class, Long.valueOf(weekDetails.get(SEASON_ID).toString()));
+            week.setSeason(season);
+            season.getPlayerGroup().getPlayers().forEach(player -> {
+                PlayerResult playerResult = new PlayerResult();
+                playerResult.setWeek(week);
+                playerResult.setPlayer(player);
+                playerResult.setWinnings(new BigDecimal(weekDetails.get(player.getName()).toString()));
+                log.info("adding new player result {} to week {}", playerResult, week);
+                week.addPlayerResult(playerResult);
+            });
+
+        }
+        week.setNotes(weekDetails.get(WEEK_NOTES).toString());
+        week.setWeekNumber(Integer.valueOf(weekDetails.get(WEEK_NUMBER).toString()));
+        log.info("Persisting week {}", week);
+        entityManager.persist(week);
     }
 }

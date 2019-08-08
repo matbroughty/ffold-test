@@ -14,10 +14,10 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +37,9 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
     HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
     Binder<Map<String, Object>> binder = new Binder<>();
     /**
-     * TODO - need to set this from map
-     * The currently edited week
+     * The currently edited week - needs to be persisted/used for update
      */
-    private Week week;
+    private Map<String, Object> weekDetails;
     private ChangeHandler changeHandler;
 
 
@@ -51,7 +50,7 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
         // wire action buttons to save, delete and reset
         save.addClickListener(e -> save());
         ConfirmDialog dialog = new ConfirmDialog("Deleting Week",
-                "Are you sure you want to delete week?", "OK", e -> deleteWeek());
+                "Are you sure you want to delete week?", "OK", e -> deleteWeek(), "Nope", e->cancel());
         delete.addClickListener(e -> dialog.open());
         cancel.addClickListener(e -> cancel());
         setVisible(false);
@@ -61,8 +60,6 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
      * Create a textfield
      * - add it to the layout
      * - bind the Map value to the textfield
-     *
-     * @param code
      */
     private TextField createTextField(Map<String, Object> week, String key) {
         TextField tf = new TextField();
@@ -79,17 +76,24 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
                 (list, fieldValue) -> {
                     list.put(key, fieldValue);
                 });
+
+
+        // no editing of id's
+        if(StringUtils.endsWith(key, "id")){
+            tf.setEnabled(false);
+        }
+
         return tf;
     }
 
 
     void deleteWeek() {
-        repository.delete(week);
+        repository.delete(weekDetails);
         changeHandler.onChange();
     }
 
     void save() {
-        repository.save(week);
+        repository.save(weekDetails);
         changeHandler.onChange();
     }
 
@@ -132,21 +136,14 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
             return;
         }
         final boolean persisted = week.get("week_id") != null;
-        Week weekDomain;
-        if (persisted) {
-            //TODO create domain
-            // Find fresh entity for editing
-            // todo
-            log.info("week id = {}", week.get("week_id"));
-            weekDomain = repository.findById(new Long(week.get("week_id").toString())).get();
-            log.info("week domain = {}", weekDomain);
-        }
+        log.info("week is persisted = {}", persisted);
         cancel.setVisible(persisted);
 
         // Bind week properties to similarly named fields
         // Could also use annotation or "manual binding" or programmatically
         // moving values from fields to entities before saving
         binder.setBean(week);
+        weekDetails = week;
 
         setVisible(true);
 
