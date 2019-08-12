@@ -3,12 +3,14 @@ plugins {
 	id 'java'
 }
 
+
+
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'java'
 apply plugin: 'idea'
 
 group = 'com.broughty'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.1'
 sourceCompatibility = '1.8'
 
 dependencyManagement {

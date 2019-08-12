@@ -1,5 +1,6 @@
 package com.broughty.ffold.repository;
 
+import com.broughty.ffold.entity.PlayerGroup;
 import com.broughty.ffold.entity.PlayerResult;
 import com.broughty.ffold.entity.Season;
 import com.broughty.ffold.entity.Week;
@@ -34,6 +35,8 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
     private static final String CURRENT_SEASON_ALL_WEEKS = "SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1";
 
     private static final String CURRENT_SEASON_SPECIFIC_WEEK = "SELECT w FROM Week w JOIN w.season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1 and w.weekNumber=?2";
+
+    private static final String SEASON_BY_PLAYER_GROUP = "SELECT s FROM Season s JOIN s.playerGroup pg WHERE s.isCurrent = true and pg.title =?1";
 
 
     @Autowired
@@ -111,9 +114,17 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
                 .setParameter(1, playerGroup).getResultList();
         Week week = weeks.stream().max(Comparator.comparing(Week::getWeekNumber)).orElse(new Week());
         Map<String, Object> weekMap = new LinkedHashMap<>();
+        // week initialised
+        if(week.getSeason() == null) {
+            Season season = (Season) entityManager.createQuery(SEASON_BY_PLAYER_GROUP).setParameter(1, playerGroup).getSingleResult();
+            week.setSeason(season);
+        }
+
         week.getSeason().getPlayerGroup().getPlayers().forEach(p -> weekMap.put(p.getName(), BigDecimal.ZERO));
-        weekMap.put(WEEK_NUMBER, week.getWeekNumber() + 1);
         weekMap.put(SEASON_ID, week.getSeason().getId());
+
+
+        weekMap.put(WEEK_NUMBER, week.getWeekNumber() + 1);
         weekMap.put(WEEK_NOTES, "");
         return weekMap;
     }

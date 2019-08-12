@@ -75,6 +75,7 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         // Instantiate and edit new Week the new button is clicked
         addNewBtn.addClickListener(e -> {
             editor.editWeek(customWeekRepository.createNextWeekForPlayerGroupMap(playerGroupStr));
+            getMultiChart();
         });
 
         // Listen changes made by the editor, refresh data from backend
@@ -82,10 +83,8 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
             editor.setVisible(false);
             listWeeks(filter.getValue());
         });
-
         // Initialize listing
         listWeeks(null);
-        chart.drawChart();
     }
 
 
@@ -115,7 +114,6 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
             playerGroupStr = StringUtils.trim(parameter);
             isAdmin = false;
         }
-
         log.info("Player Group = {} and isAdmin = {}", parameter, isAdmin);
 
         if (!isAdmin) {
@@ -138,12 +136,13 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         label.setWidth("100%");
         if (StringUtils.isNotBlank(playerGroupStr)) {
             weeks = weekRepository.findCurrentSeasonsWeeksForPlayerGroupMap(playerGroupStr, null);
-
-            Map<String, Object> s = weeks.get(0);
-            for (Map.Entry<String, Object> entry : s.entrySet()) {
-                log.info("add column entry {}->{}", entry.getKey(), entry.getValue());
-                if (!StringUtils.endsWith(entry.getKey(), "id")) {
-                    grid.addColumn(h -> h.get(entry.getKey())).setHeader(new Label(entry.getKey()));
+            if (!weeks.isEmpty()) {
+                Map<String, Object> s = weeks.get(0);
+                for (Map.Entry<String, Object> entry : s.entrySet()) {
+                    log.info("add column entry {}->{}", entry.getKey(), entry.getValue());
+                    if (!StringUtils.endsWith(entry.getKey(), "id")) {
+                        grid.addColumn(h -> h.get(entry.getKey())).setHeader(new Label(entry.getKey()));
+                    }
                 }
             }
             grid.setItems(weeks);
@@ -154,7 +153,6 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
     }
 
 
-    //todo - not displaying any data
     protected Chart getMultiChart() {
 
         chart.setId("chart");
