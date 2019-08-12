@@ -1,5 +1,6 @@
 package com.broughty.ffold.repository;
 
+import com.broughty.ffold.entity.PlayerResult;
 import com.broughty.ffold.entity.Week;
 import lombok.Data;
 import lombok.NonNull;
@@ -25,6 +26,8 @@ class PlayerTotals {
     private BigDecimal totalWon = BigDecimal.ZERO;
 
     private List<Week> winningWeeks = new ArrayList<>();
+
+    private List<PlayerResult> winningResults = new ArrayList<>();
 
 
 }

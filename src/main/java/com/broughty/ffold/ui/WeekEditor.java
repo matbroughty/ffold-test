@@ -1,6 +1,5 @@
 package com.broughty.ffold.ui;
 
-import com.broughty.ffold.entity.Week;
 import com.broughty.ffold.repository.WeekRepository;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
@@ -50,7 +49,7 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
         // wire action buttons to save, delete and reset
         save.addClickListener(e -> save());
         ConfirmDialog dialog = new ConfirmDialog("Deleting Week",
-                "Are you sure you want to delete week?", "OK", e -> deleteWeek(), "Nope", e->cancel());
+                "Are you sure you want to delete week?", "OK", e -> deleteWeek(), "Nope", e -> cancel());
         delete.addClickListener(e -> dialog.open());
         cancel.addClickListener(e -> cancel());
         setVisible(false);
@@ -79,7 +78,7 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
 
 
         // no editing of id's
-        if(StringUtils.endsWith(key, "id")){
+        if (StringUtils.endsWith(key, "id")) {
             tf.setEnabled(false);
         }
 
@@ -109,7 +108,7 @@ public class WeekEditor extends VerticalLayout implements KeyNotifier {
         HorizontalLayout form = new HorizontalLayout();
 
         List<Component> components = new ArrayList<>();
-        if(week != null){
+        if (week != null) {
             week.forEach((k, v) -> {
                 log.info("adding component for key {} and value {}", k, v);
                 components.add(createTextField(week, k));

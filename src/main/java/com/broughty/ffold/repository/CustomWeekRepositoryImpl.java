@@ -77,6 +77,7 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
         return null;
     }
 
+    @Transactional
     @Override
     public Map<String, PlayerTotals> buildPlayerTotalMap(String playerGroup) {
         List<Week> weeks = entityManager.createQuery(CURRENT_SEASON_ALL_WEEKS)
@@ -86,7 +87,7 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
         weeks.stream().forEach(week -> {
             week.getPlayerResults()
                     .stream()
-                    .filter(pr -> pr.getWinnings().compareTo(BigDecimal.ZERO) > 0)
+                    //.filter(pr -> pr.getWinnings().compareTo(BigDecimal.ZERO) > 0)
                     .forEach(playerResult -> {
                         PlayerTotals playerTotals = playerTotalsMap.get(playerResult.getPlayer().getName());
                         if (playerTotals == null) {
@@ -95,6 +96,7 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
                         }
                         playerTotals.setTotalWon(playerTotals.getTotalWon().add(playerResult.getWinnings()));
                         playerTotals.getWinningWeeks().add(playerResult.getWeek());
+                        playerTotals.getWinningResults().add(playerResult);
                     });
 
         });
@@ -109,7 +111,7 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
                 .setParameter(1, playerGroup).getResultList();
         Week week = weeks.stream().max(Comparator.comparing(Week::getWeekNumber)).orElse(new Week());
         Map<String, Object> weekMap = new LinkedHashMap<>();
-        week.getSeason().getPlayerGroup().getPlayers().forEach(p-> weekMap.put(p.getName(), BigDecimal.ZERO));
+        week.getSeason().getPlayerGroup().getPlayers().forEach(p -> weekMap.put(p.getName(), BigDecimal.ZERO));
         weekMap.put(WEEK_NUMBER, week.getWeekNumber() + 1);
         weekMap.put(SEASON_ID, week.getSeason().getId());
         weekMap.put(WEEK_NOTES, "");
@@ -120,9 +122,9 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
     @Transactional
     @Override
     public void delete(@NonNull Map<String, Object> weekDetails) {
-        log.info("in delete with {} ", weekDetails.keySet().stream().map(k-> "key = " + k + " value = " + weekDetails.get(k)).collect(Collectors.toList()));
+        log.info("in delete with {} ", weekDetails.keySet().stream().map(k -> "key = " + k + " value = " + weekDetails.get(k)).collect(Collectors.toList()));
         String weekId = weekDetails.get(WEEK_ID) != null ? weekDetails.get(WEEK_ID).toString() : null;
-        if(StringUtils.isNotBlank(weekId)){
+        if (StringUtils.isNotBlank(weekId)) {
             Week week = entityManager.find(Week.class, Long.valueOf(weekId));
             log.warn("deleting week with id {} - week {}", weekId, week);
             entityManager.remove(week);
@@ -132,17 +134,17 @@ public class CustomWeekRepositoryImpl implements CustomWeekRepository {
     @Transactional
     @Override
     public void save(Map<String, Object> weekDetails) {
-        log.info("in save with {} ", weekDetails.keySet().stream().map(k-> "key = " + k + " value = " + weekDetails.get(k)).collect(Collectors.toList()));
+        log.info("in save with {} ", weekDetails.keySet().stream().map(k -> "key = " + k + " value = " + weekDetails.get(k)).collect(Collectors.toList()));
         String weekId = weekDetails.get(WEEK_ID) != null ? weekDetails.get(WEEK_ID).toString() : null;
         Week week;
-        if(StringUtils.isNotBlank(weekId)){
+        if (StringUtils.isNotBlank(weekId)) {
             week = entityManager.find(Week.class, Long.valueOf(weekId));
             log.info("Updating week {}", week);
-            week.getPlayerResults().stream().forEach(pr-> {
+            week.getPlayerResults().stream().forEach(pr -> {
                 log.info("Updating player result for {} from {} to {} ", pr.getPlayer(), pr.getWinnings(), weekDetails.get(pr.getPlayer().getName()));
                 pr.setWinnings(new BigDecimal(weekDetails.get(pr.getPlayer().getName()).toString()));
             });
-        }else{
+        } else {
             week = new Week();
             Season season = entityManager.find(Season.class, Long.valueOf(weekDetails.get(SEASON_ID).toString()));
             week.setSeason(season);
