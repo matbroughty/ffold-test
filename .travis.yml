@@ -9,7 +9,7 @@ deploy:
   region: "us-east-2"
   app: "Fftest-env"
   env: "e-pjp8v2numr"
-#  bucket_name: "elasticbeanstalk-us-east-2-343893643132"
+  bucket_name: "elasticbeanstalk-us-east-2-343893643132"
   bucket: "elasticbeanstalk-us-east-2-343893643132"
   bucket_path: "travis-aws"
   on:
