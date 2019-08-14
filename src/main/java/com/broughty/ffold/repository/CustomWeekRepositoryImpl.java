@@ -20,13 +20,13 @@ import java.util.stream.Collectors;
 @Repository
 public class CustomWeekRepositoryImpl implements CustomWeekRepository {
 
-    public static final String WEEK_NUMBER = "Week Number";
+    public static final String WEEK_NUMBER = "Week";
 
     public static final String SEASON = "Season";
 
     public static final String SEASON_ID = "season_id";
 
-    public static final String WEEK_NOTES = "Week Notes";
+    public static final String WEEK_NOTES = "Notes";
 
     public static final String WEEK_ID = "week_id";
 
