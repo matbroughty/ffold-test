@@ -11,9 +11,9 @@ deploy:
   env: "Fftest-env"
   bucket_name: "elasticbeanstalk-us-east-2-343893643132"
   bucket: "elasticbeanstalk-us-east-2-343893643132"
-# bucket_path: "travis-aws"
-  on:
-    branch: master
+# bucket_path: "travis-
+# on:
+#   branch: master
   access_key_id: "AKIAJ6CJ3OF575A67MVA"
 #    secure: "GbwWXe06NvE6kjJxEcut+I5fwbOGkS7tTqGg+cwk4mUjQLl1uzsZr02K9GbpsNV1EgrjoQrfJNH1Gtypxee86FaNs3yFQyGhpIlZhhCoGKBHqlclIQ262YjAhkuHUvXzLiAvxNNoXJYHSPqX8LWorTy6ZpnjQsYq/76sf+9oPulTVeYZUGjpJ1G+PQgHoIEnWXUOBH7Hc+8LjdosIOBCLC+cyl5h9ogRTJ2RIQBqKzgbyOpbc8727CG1O1N72Cthf/jq7gxGd5YavhUITtpUaVE6sR3akdsWto74Wq7TGIBBAsl5ccFkTOrA4nTqqQjwy56LiRfdg/8BfITuda9WXyeuqTWENN6sc2v8pT9Y3IygBYX3NBTTg5SGCocWN1Rw4b3Kj+KOOAWqqfM61GJgdyqqKYACpeqLYqNmIAdY3WFXpOKXMyHpG3nDhBh1jUzmc9UQjoEGbHnzY/3DNgE2yYQj4jAyvC8Rstg5uWmGxRU54/DdXLLZ/7dex0Gjh2uD97C+cPDiVKXrOe+bIhh3PfeCFI0yuXZFE6Zccr9mEu1O4AKbLqCCNKBXTph4gnTW7IVFnRiLegGB0N6qDwLI7rJdWI5n55wPQ2O0rA4Mtp9lRBn56Q+gQwssisuxTAnnrog3Zo/DR+vaX3r7sFVQdG9rYhDgyjIsQe3VSKXzChs="
   secret_access_key: "E7lGRj81c1hZyxD54uj/NUvVx79jTzeycElMBX5x"
