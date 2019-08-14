@@ -7,7 +7,7 @@ script: ./gradlew bootJar
 deploy:
   provider: elasticbeanstalk
   region: "us-east-2"
-  app: "Fftest-env"
+  app: "FFTest"
   env: "e-pjp8v2numr"
   bucket_name: "elasticbeanstalk-us-east-2-343893643132"
   bucket: "elasticbeanstalk-us-east-2-343893643132"
