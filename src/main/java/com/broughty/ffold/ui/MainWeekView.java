@@ -9,6 +9,7 @@ import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -18,6 +19,9 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeUtil;
+import com.vaadin.flow.theme.lumo.Lumo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +43,7 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
     Chart chart = new Chart(ChartType.COLUMN);
     List<Map<String, Object>> weeks; // the data for the grid
     private boolean isAdmin = false;
+    private Button bannerButton = new Button(new Icon(VaadinIcon.CASH));
     private String playerGroupStr = null;
     private PlayerGroupRepository playerGroupRepository;
     private WeekRepository customWeekRepository;
@@ -54,11 +59,13 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         this.filter = new TextField();
         this.addNewBtn = new Button("New Week ", VaadinIcon.PLUS.create());
 
+        bannerButton.setThemeName(Lumo.DARK);
         // build layout
         HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
 
         getMultiChart();
-        add(chart, label, actions, grid, editor);
+        add(bannerButton, chart, label, actions, grid, editor);
+        setHorizontalComponentAlignment(Alignment.STRETCH, bannerButton);
 
         grid.setHeight("300px");
         filter.setPlaceholder("Filter by week Number");
