@@ -8,7 +8,7 @@ deploy:
   provider: elasticbeanstalk
   region: "us-east-2"
   app: "FFTest"
-  env: "ftest-env"
+  env: "Fftest-env"
   bucket_name: "elasticbeanstalk-us-east-2-343893643132"
   bucket: "elasticbeanstalk-us-east-2-343893643132"
   bucket_path: "travis-aws"
