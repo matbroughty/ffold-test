@@ -18,3 +18,4 @@ deploy:
   app: "Fftest-env"
   env: "e-pjp8v2numr"
 # bucket_name: "elasticbeanstalk-us-east-2-343893643132"
+  bucket_name: "fourfoldbucket"
