@@ -11,7 +11,7 @@ deploy:
   env: "Fftest-env"
   bucket_name: "elasticbeanstalk-us-east-2-343893643132"
   bucket: "elasticbeanstalk-us-east-2-343893643132"
-  bucket_path: "travis-aws"
+# bucket_path: "travis-aws"
   on:
     branch: master
   access_key_id: "AKIAJ6CJ3OF575A67MVA"
