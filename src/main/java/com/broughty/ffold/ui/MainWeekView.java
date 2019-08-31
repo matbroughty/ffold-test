@@ -19,15 +19,15 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeUtil;
 import com.vaadin.flow.theme.lumo.Lumo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Route(value = "")
@@ -41,6 +41,7 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
     private final Button addNewBtn;
     Label label = new Label("Four Fold Competition ");
     Chart chart = new Chart(ChartType.COLUMN);
+    Chart chart2 = new Chart(ChartType.LINE);
     List<Map<String, Object>> weeks; // the data for the grid
     private boolean isAdmin = false;
     private Button bannerButton = new Button(new Icon(VaadinIcon.CASH));
@@ -64,7 +65,8 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
 
         getMultiChart();
-        add(bannerButton, chart, label, actions, grid, editor);
+        getLineChart();
+        add(bannerButton, chart, chart2, label, actions, grid, editor);
         setHorizontalComponentAlignment(Alignment.STRETCH, bannerButton);
 
         grid.setHeight("300px");
@@ -83,6 +85,7 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         addNewBtn.addClickListener(e -> {
             editor.editWeek(customWeekRepository.createNextWeekForPlayerGroupMap(playerGroupStr));
             getMultiChart();
+            getLineChart();
         });
 
         // Listen changes made by the editor, refresh data from backend
@@ -136,8 +139,8 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
 
         }
 
-        //chart = getChart();
         getMultiChart();
+        getLineChart();
         label.setText("Four Fold Competition " + playerGroupStr);
         label.setHeight("20%");
         label.setWidth("100%");
@@ -211,6 +214,55 @@ public class MainWeekView extends VerticalLayout implements HasUrlParameter<Stri
         chart.drawChart();
 
         return chart;
+    }
+
+
+    protected Chart getLineChart() {
+
+        chart2.setId("chart2");
+
+        Configuration configuration = chart2.getConfiguration();
+
+        configuration.setTitle("Season Progress");
+        configuration.setSubTitle(playerGroupStr);
+
+        YAxis yAxis = configuration.getyAxis();
+        yAxis.setTitle("Winnings (£)");
+
+        configuration.getxAxis().setTitle("Weeks");
+
+
+
+        Legend legend = configuration.getLegend();
+        legend.setLayout(LayoutDirection.VERTICAL);
+        legend.setVerticalAlign(VerticalAlign.MIDDLE);
+        legend.setAlign(HorizontalAlign.RIGHT);
+
+        //PlotOptionsSeries plotOptionsSeries = new PlotOptionsSeries();
+        //plotOptionsSeries.setPointStart(1);
+        //configuration.setPlotOptions(plotOptionsSeries);
+
+        Map<String, PlayerTotals> playerTotals = weekRepository.buildPlayerTotalMap(playerGroupStr);
+        List<String> weekNumbers = weekRepository.findCurrentWeeksForPlayerGroup(playerGroupStr).stream().map(week-> week.getWeekNumber().toString()).collect(Collectors.toList());
+        configuration.getxAxis().setCategories(weekNumbers.toArray(new String[weekNumbers.size()]));
+        playerTotals.forEach((k, v) -> {
+
+            ListSeries listSeries = new ListSeries();
+            listSeries.setName(k);
+            v.getWinningResults().forEach(res -> {
+                        BigDecimal current = BigDecimal.ZERO;
+                        if (listSeries.getData() != null && listSeries.getData().length > 0) {
+                            current = (BigDecimal) listSeries.getData()[listSeries.getData().length - 1];
+                        }
+                        listSeries.addData(current.add(res.getWinnings()));
+                    }
+            );
+            configuration.addSeries(listSeries);
+
+        });
+        chart2.drawChart();
+        return chart2;
+
     }
 
 

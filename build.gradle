@@ -10,7 +10,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 group = 'com.broughty'
-version = '0.1.3'
+version = '0.1.4'
 sourceCompatibility = '1.8'
 
 dependencyManagement {
